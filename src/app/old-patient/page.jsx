@@ -196,8 +196,9 @@ const PatientPortal = () => {
   console.log('Filtered reports:', filteredReports);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+    <>
       <Navbar/>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header Section */}
@@ -463,6 +464,7 @@ const PatientPortal = () => {
       </div>
       <Footer/>
     </div>
+    </>
   );
 };
 

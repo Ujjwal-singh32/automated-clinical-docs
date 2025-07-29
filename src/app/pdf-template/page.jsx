@@ -1,20 +1,28 @@
 "use client";
-import React from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 
-const PdfTemplate = ({
-  doctorName,
-  patientName,
-  date,
-  symptoms,
-  observations,
-  prescription,
-  remarks,
-  clinicName,
-  clinicAddress,
-  contact
-}) => {
+import React, { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+export default function PdfPage() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("pdfData");
+    if (stored) {
+      setData(JSON.parse(stored));
+    }
+  }, []);
+
+  if (!data) {
+    return (
+      <div className="p-8 text-center text-gray-500">Loading PDF data...</div>
+    );
+  }
+
+  return <PdfTemplate data={data} />;
+}
+
+const PdfTemplate = ({ data }) => {
   return (
     <div className="mx-auto my-8 p-0 font-sans text-slate-800 relative overflow-hidden print:bg-white print:shadow-none"
       style={{
@@ -64,16 +72,16 @@ const PdfTemplate = ({
         </div>
         <div className="flex-1">
           <h1 className="text-4xl font-bold text-white mb-3 font-sans tracking-tight drop-shadow-sm">
-            {clinicName || 'Medical Center'}
+            {data.clinicName || 'Medical Center'}
           </h1>
           <div className="flex flex-col space-y-2">
             <p className="text-lg text-blue-50 font-medium flex items-center gap-2">
               <span className="text-xl">📍</span>
-              {clinicAddress || '123 Medical Plaza, Healthcare City'}
+              {data.clinicAddress || '123 Medical Plaza, Healthcare City'}
             </p>
             <p className="text-base text-blue-100 flex items-center gap-2">
               <span className="text-lg">📞</span>
-              {contact || 'Phone: (555) 123-4567'}
+              {data.contact || 'Phone: (555) 123-4567'}
             </p>
           </div>
         </div>
@@ -95,7 +103,7 @@ const PdfTemplate = ({
               </div>
             </div>
             <div className="text-xl text-slate-800 font-semibold">
-              {doctorName || 'Dr. John Smith, MD'}
+              {data.doctorName || 'Dr. John Smith, MD'}
             </div>
           </div>
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -108,7 +116,7 @@ const PdfTemplate = ({
               </div>
             </div>
             <div className="text-xl text-slate-800 font-semibold">
-              {date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              {data.date || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </div>
         </div>
@@ -122,7 +130,7 @@ const PdfTemplate = ({
             </div>
           </div>
           <div className="text-2xl text-slate-800 font-bold tracking-wide">
-            {patientName || 'Jane Doe'}
+            {data.patientName || 'Jane Doe'}
           </div>
         </div>
       </div>
@@ -142,8 +150,8 @@ const PdfTemplate = ({
             Reported Symptoms
           </h3>
           <div className="space-y-4">
-            {(symptoms && symptoms.length > 0) ? (
-              symptoms.map((symptom, idx) => (
+            {(data.symptoms && data.symptoms.length > 0) ? (
+              data.symptoms.map((symptom, idx) => (
                 <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-red-200 shadow-sm hover:shadow-md transition-all duration-200 relative group">
                   <Badge className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">{idx + 1}</Badge>
                   <div className="text-lg text-slate-700 font-medium pr-16 leading-relaxed">{symptom}</div>
@@ -173,8 +181,8 @@ const PdfTemplate = ({
             Clinical Findings
           </h3>
           <div className="space-y-4">
-            {(observations && observations.length > 0) ? (
-              observations.map((observation, idx) => (
+            {(data.observations && data.observations.length > 0) ? (
+              data.observations.map((observation, idx) => (
                 <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-emerald-200 shadow-sm hover:shadow-md transition-all duration-200 relative group">
                   <Badge className="absolute top-4 right-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg">{idx + 1}</Badge>
                   <div className="text-lg text-slate-700 font-medium pr-16 leading-relaxed">{observation}</div>
@@ -204,8 +212,8 @@ const PdfTemplate = ({
             Prescribed Medications
           </h3>
           <div className="space-y-4">
-            {(prescription && prescription.length > 0) ? (
-              prescription.map((med, idx) => (
+            {(data.prescription && data.prescription.length > 0) ? (
+              data.prescription.map((med, idx) => (
                 <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-purple-200 shadow-sm hover:shadow-md transition-all duration-200 relative group">
                   <Badge className="absolute top-4 right-4 bg-gradient-to-r from-purple-500 to-violet-500 text-white shadow-lg">{idx + 1}</Badge>
                   <div className="text-lg text-slate-700 font-medium pr-16 leading-relaxed">{med}</div>
@@ -259,19 +267,22 @@ const PdfTemplate = ({
             Additional Notes
           </h3>
           <div className="space-y-4">
-            {(remarks && remarks.length > 0) ? (
-              remarks.map((remark, idx) => (
-                <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200 relative group">
-                  <Badge className="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">{idx + 1}</Badge>
-                  <div className="text-lg text-slate-700 font-medium pr-16 leading-relaxed">{remark}</div>
+            {(data.remarks && data.remarks.length > 0) ? (
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-orange-200 shadow-sm hover:shadow-md transition-all duration-200 relative group">
+                <Badge className="absolute top-4 right-4 bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg">1</Badge>
+                <div className="text-lg text-slate-700 font-medium pr-16 leading-relaxed">
+                  {data.remarks} {/* Combine all remarks into a single paragraph */}
                 </div>
-              ))
+              </div>
             ) : (
               <div className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-orange-200 shadow-sm">
-                <div className="text-lg text-slate-700 font-medium leading-relaxed">• Patient should rest and maintain adequate hydration</div>
+                <div className="text-lg text-slate-700 font-medium leading-relaxed">
+                  • Patient should rest and maintain adequate hydration
+                </div>
               </div>
             )}
           </div>
+
         </div>
       </div>
       <Separator className="my-0" />
@@ -296,7 +307,7 @@ const PdfTemplate = ({
             <div className="text-base text-slate-600 font-medium">Doctor's Signature</div>
           </div>
           <div className="h-20 border-b-4 border-blue-500 w-48 mt-4 rounded-sm bg-gradient-to-r from-blue-50 to-transparent"></div>
-          <div className="text-sm text-slate-700 mt-3 font-semibold">{doctorName || 'Dr. John Smith, MD'}</div>
+          <div className="text-sm text-slate-700 mt-3 font-semibold">{data.doctorName || 'Dr. John Smith, MD'}</div>
         </div>
       </div>
       {/* Enhanced bottom border */}
@@ -316,5 +327,4 @@ const PdfTemplate = ({
   );
 };
 
-export default PdfTemplate;
 
