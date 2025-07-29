@@ -1,105 +1,99 @@
 from flask import Flask
 from flask_cors import CORS
 import threading
-import queue
-import time
 import numpy as np
 import sounddevice as sd
-import speech_recognition as sr
-from deep_translator import GoogleTranslator
+import whisper
+import time
 from nlp_module import run_nlp_pipeline
-from scipy.io.wavfile import write
 
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-r = sr.Recognizer()
-transcript_lines = []
+# Whisper model
+model = whisper.load_model("base")
+
+# Config
+SAMPLE_RATE = 16000
+CHANNELS = 1
+
+# Global state
 is_listening = False
-listener_thread = None
-
-audio_queue = queue.Queue()
-
-
-def audio_callback(indata, frames, time_info, status):
-    audio_queue.put(indata.copy())
+audio_buffer = []
+recording_thread = None
 
 
-def continuous_listen():
-    global is_listening
+# Background audio recording thread
+def record_audio():
+    global is_listening, audio_buffer
+    print("🎤 Mic opened...")
 
-    samplerate = 16000  # 16kHz sampling rate
-    channels = 1
+    try:
+        with sd.InputStream(
+            samplerate=SAMPLE_RATE, channels=CHANNELS, dtype="float32"
+        ) as stream:
+            while is_listening:
+                chunk, _ = stream.read(1024)
+                audio_buffer.append(chunk)
+    except Exception as e:
+        print("❌ Recording Error:", e)
 
-    with sd.InputStream(
-        callback=audio_callback, channels=channels, samplerate=samplerate
-    ):
-        print("🎙️ Continuous mic started...")
-
-        while is_listening:
-            frames = []
-
-            start_time = time.time()
-            while time.time() - start_time < 3:
-                try:
-                    data = audio_queue.get(timeout=3)
-                    frames.append(data)
-                except queue.Empty:
-                    print("⏱️ No audio chunk in queue")
-                    break
-
-            if frames:
-                audio_data = np.concatenate(frames)
-                audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
-
-                audio_sr = sr.AudioData(audio_bytes, samplerate, 2)
-                try:
-                    print("🔍 Recognizing...")
-                    text = r.recognize_google(audio_sr, language="hi-IN")
-                    translated = GoogleTranslator(source="auto", target="en").translate(
-                        text
-                    )
-                    print("📄 Translated:", translated)
-                    transcript_lines.append(translated)
-                except sr.UnknownValueError:
-                    print("❌ Could not understand audio")
-                except sr.RequestError:
-                    print("❌ API unavailable")
-                except Exception as e:
-                    print("❌ Error:", e)
+    print("🛑 Mic closed.")
 
 
 @app.post("/start")
 def start_recording():
-    global is_listening, listener_thread
+    global is_listening, recording_thread, audio_buffer
 
     if not is_listening:
         is_listening = True
-        listener_thread = threading.Thread(target=continuous_listen)
-        listener_thread.start()
-        print("🎤 Microphone is now actively listening every 5 seconds...")
+        audio_buffer = []
+        recording_thread = threading.Thread(target=record_audio)
+        recording_thread.start()
+        print("▶️ Recording started")
 
-    return "Recording started", 200
+    return {"status": "recording started"}, 200
 
 
 @app.post("/stop")
 def stop_recording():
-    global is_listening, transcript_lines
+    global is_listening, recording_thread, audio_buffer
 
-    is_listening = False
+    if is_listening:
+        is_listening = False
+        recording_thread.join()
 
-    if listener_thread:
-        print("🕒 Waiting 5 seconds to finalize any remaining audio...")
-        time.sleep(5)  # Give time for the listener to finish
-        listener_thread.join()
+        print("⏳ Waiting 5 seconds to ensure all audio is captured...")
+        time.sleep(5)
 
-    final_transcript = "\n".join(transcript_lines)
-    print("📄 Final Transcript:\n", final_transcript)
+        full_audio = np.concatenate(audio_buffer, axis=0)
+        full_audio = np.squeeze(full_audio)
 
-    run_nlp_pipeline(final_transcript)
-    transcript_lines = []
+        print("🧠 Transcribing...")
 
-    return "Recording stopped and PDF generated", 200
+        try:
+            result = model.transcribe(
+                full_audio, fp16=False, language="hi", task="translate"
+            )
+            transcript = result["text"].strip()
+
+            print("✅ Transcript:", transcript)
+
+            # ✅ Send transcript directly to NLP pipeline
+            soap_output = run_nlp_pipeline(transcript)
+
+            return {
+                "status": "recording stopped and transcribed",
+                "transcript": transcript,
+                "soap_notes": soap_output,  # You can send this back if needed
+            }, 200
+
+        except Exception as e:
+            print("❌ Transcription failed:", e)
+            return {"status": "error", "error": str(e)}, 500
+
+    return {"status": "not recording"}, 400
 
 
 if __name__ == "__main__":
