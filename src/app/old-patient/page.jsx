@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Search, User, FileText, Calendar, Stethoscope, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-
+import Navbar from '@/components/ui/Navbar';
+import Footer from '@/components/ui/Footer';
 const PatientPortal = () => {
   const [patientId, setPatientId] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -196,17 +197,22 @@ const PatientPortal = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+      <Navbar/>
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-              <User className="w-6 h-6 text-white" />
+
+        {/* Header Section */}
+        <section className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm px-6 py-8 mt-8 sm:mt-12 mb-10 max-w-6xl mx-auto">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+                <User className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-800">Patient Portal</h1>
             </div>
-            <h1 className="text-3xl font-bold text-gray-800">Patient Portal</h1>
+            <p className="text-gray-600 text-lg">Search and view patient medical reports</p>
           </div>
-          <p className="text-gray-600 text-lg">Search and view patient medical reports</p>
-        </div>
+        </section>
+
 
         {/* Search Section */}
         <Card className="p-8 mb-8 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
@@ -455,6 +461,7 @@ const PatientPortal = () => {
           </Card>
         )}
       </div>
+      <Footer/>
     </div>
   );
 };
