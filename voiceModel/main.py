@@ -8,7 +8,7 @@ import sounddevice as sd
 import speech_recognition as sr
 from deep_translator import GoogleTranslator
 from nlp_module import run_nlp_pipeline
-from collections import deque
+from scipy.io.wavfile import write
 
 app = Flask(__name__)
 CORS(app)
@@ -17,79 +17,67 @@ r = sr.Recognizer()
 transcript_lines = []
 is_listening = False
 listener_thread = None
-processor_thread = None
 
-# Deque for rolling audio buffer
-audio_buffer = deque()
-buffer_lock = threading.Lock()
-
-samplerate = 16000  # 16kHz
-channels = 1
-chunk_duration = 0.1  # 100ms per chunk
-chunk_samples = int(samplerate * chunk_duration)
-
-max_buffer_seconds = 6  # keep 6 seconds rolling audio
-max_chunks = int(max_buffer_seconds / chunk_duration)
+audio_queue = queue.Queue()
 
 
 def audio_callback(indata, frames, time_info, status):
-    with buffer_lock:
-        audio_buffer.append(indata.copy())
-        if len(audio_buffer) > max_chunks:
-            audio_buffer.popleft()
+    audio_queue.put(indata.copy())
 
 
-def audio_processor():
+def continuous_listen():
     global is_listening
-    print("🧠 Audio processor started...")
-    while is_listening:
-        time.sleep(3)  # process every 3 seconds
-        with buffer_lock:
-            if len(audio_buffer) < int(3 / chunk_duration):
-                continue  # not enough data
-            recent_audio = list(audio_buffer)[-int(3 / chunk_duration):]
 
-        audio_data = np.concatenate(recent_audio)
-        audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+    samplerate = 16000  # 16kHz sampling rate
+    channels = 1
 
-        try:
-            audio_sr = sr.AudioData(audio_bytes, samplerate, 2)
-            print("🔍 Recognizing...")
-            text = r.recognize_google(audio_sr, language="hi-IN")
-            translated = GoogleTranslator(source="auto", target="en").translate(text)
-            print("📄 Translated:", translated)
-            transcript_lines.append(translated)
-        except sr.UnknownValueError:
-            print("❌ Could not understand audio")
-        except sr.RequestError:
-            print("❌ API unavailable")
-        except Exception as e:
-            print("❌ Error:", e)
+    with sd.InputStream(
+        callback=audio_callback, channels=channels, samplerate=samplerate
+    ):
+        print("🎙️ Continuous mic started...")
+
+        while is_listening:
+            frames = []
+
+            start_time = time.time()
+            while time.time() - start_time < 3:
+                try:
+                    data = audio_queue.get(timeout=3)
+                    frames.append(data)
+                except queue.Empty:
+                    print("⏱️ No audio chunk in queue")
+                    break
+
+            if frames:
+                audio_data = np.concatenate(frames)
+                audio_bytes = (audio_data * 32767).astype(np.int16).tobytes()
+
+                audio_sr = sr.AudioData(audio_bytes, samplerate, 2)
+                try:
+                    print("🔍 Recognizing...")
+                    text = r.recognize_google(audio_sr, language="hi-IN")
+                    translated = GoogleTranslator(source="auto", target="en").translate(
+                        text
+                    )
+                    print("📄 Translated:", translated)
+                    transcript_lines.append(translated)
+                except sr.UnknownValueError:
+                    print("❌ Could not understand audio")
+                except sr.RequestError:
+                    print("❌ API unavailable")
+                except Exception as e:
+                    print("❌ Error:", e)
 
 
 @app.post("/start")
 def start_recording():
-    global is_listening, listener_thread, processor_thread
+    global is_listening, listener_thread
 
     if not is_listening:
         is_listening = True
-        audio_buffer.clear()
-        listener_thread = threading.Thread(
-            target=sd.InputStream,
-            kwargs={
-                "callback": audio_callback,
-                "channels": channels,
-                "samplerate": samplerate,
-                "blocksize": chunk_samples,
-            },
-            daemon=True,
-        )
-        processor_thread = threading.Thread(target=audio_processor, daemon=True)
-
+        listener_thread = threading.Thread(target=continuous_listen)
         listener_thread.start()
-        processor_thread.start()
-
-        print("🎤 Microphone is now listening continuously...")
+        print("🎤 Microphone is now actively listening every 5 seconds...")
 
     return "Recording started", 200
 
@@ -99,7 +87,12 @@ def stop_recording():
     global is_listening, transcript_lines
 
     is_listening = False
-    time.sleep(4)  # Let last chunk finish
+
+    if listener_thread:
+        print("🕒 Waiting 5 seconds to finalize any remaining audio...")
+        time.sleep(5)  # Give time for the listener to finish
+        listener_thread.join()
+
     final_transcript = "\n".join(transcript_lines)
     print("📄 Final Transcript:\n", final_transcript)
 
