@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Search, User, FileText, Calendar, Stethoscope, Download } from 'lucide-react';
+import { Search, User, FileText, Calendar, Stethoscope, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 
@@ -9,6 +9,8 @@ const PatientPortal = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [error, setError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // Mock patient data - in real app this would come from API/database
   const mockPatients = {
@@ -79,6 +81,7 @@ const PatientPortal = () => {
     setIsSearching(true);
     setError('');
     setPatientData(null);
+    setSelectedDate(null);
 
     // Simulate API call delay
     setTimeout(() => {
@@ -102,6 +105,94 @@ const PatientPortal = () => {
     // In real app, this would generate and download PDF
     alert(`Downloading report ${report.id} for ${patientData.name}`);
   };
+
+  // Calendar functions
+  const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const hasReportOnDate = (date) => {
+    if (!patientData) return false;
+    const dateStr = formatDate(date);
+    console.log('Checking date:', dateStr, 'Available dates:', patientData.reports.map(r => r.date));
+    return patientData.reports.some(report => report.date === dateStr);
+  };
+
+  const getReportsForDate = (date) => {
+    if (!patientData) return [];
+    const dateStr = formatDate(date);
+    console.log('Filtering for date:', dateStr);
+    const filtered = patientData.reports.filter(report => report.date === dateStr);
+    console.log('Found reports:', filtered);
+    return filtered;
+  };
+
+  const handleDateClick = (date) => {
+    const dateStr = formatDate(date);
+    console.log('Date clicked:', dateStr);
+    if (hasReportOnDate(date)) {
+      console.log('Setting selected date:', dateStr);
+      setSelectedDate(dateStr);
+    }
+  };
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth);
+    const firstDay = getFirstDayOfMonth(currentMonth);
+    const days = [];
+
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="h-12"></div>);
+    }
+
+    // Add cells for each day of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const hasReport = hasReportOnDate(date);
+      const isSelected = selectedDate === formatDate(date);
+      
+      days.push(
+        <button
+          key={day}
+          onClick={() => handleDateClick(date)}
+          className={`h-12 w-full flex items-center justify-center rounded-lg transition-colors ${
+            hasReport
+              ? isSelected
+                ? 'bg-blue-600 text-white font-semibold'
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium'
+              : 'text-gray-400 hover:bg-gray-100'
+          }`}
+          disabled={!hasReport}
+        >
+          {day}
+          {hasReport && (
+            <div className="w-2 h-2 bg-blue-500 rounded-full ml-1"></div>
+          )}
+        </button>
+      );
+    }
+
+    return days;
+  };
+
+  const filteredReports = selectedDate 
+    ? getReportsForDate(new Date(selectedDate))
+    : patientData?.reports || [];
+
+  console.log('Selected date:', selectedDate);
+  console.log('Filtered reports:', filteredReports);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
@@ -181,88 +272,170 @@ const PatientPortal = () => {
               </div>
             </Card>
 
-            {/* Reports Section */}
-            <div>
-              <div className="flex items-center gap-3 mb-6">
-                <FileText className="w-6 h-6 text-gray-700" />
-                <h3 className="text-2xl font-bold text-gray-800">Medical Reports</h3>
-                <Badge className="bg-blue-100 text-blue-800">
-                  {patientData.reports.length} reports
-                </Badge>
+            {/* Calendar and Reports Section */}
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Calendar */}
+              <div className="lg:col-span-1">
+                <Card className="p-6 bg-white border-0 shadow-lg">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">Calendar View</h3>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
+                        className="p-1 hover:bg-gray-100 rounded"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <span className="text-sm font-medium text-gray-600">
+                        {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                      </span>
+                      <button
+                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
+                        className="p-1 hover:bg-gray-100 rounded"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1 mb-4">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <div key={day} className="h-8 flex items-center justify-center text-xs font-medium text-gray-500">
+                        {day}
+                      </div>
+                    ))}
+                    {renderCalendar()}
+                  </div>
+
+                  {/* Legend */}
+                  <div className="flex items-center gap-4 text-xs text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                      <span>Has Report</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                      <span>Selected</span>
+                    </div>
+                  </div>
+
+                  {selectedDate && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm font-medium text-blue-800">
+                        Selected: {new Date(selectedDate).toLocaleDateString('en-IN')}
+                      </p>
+                      <button
+                        onClick={() => setSelectedDate(null)}
+                        className="text-xs text-blue-600 hover:underline mt-1"
+                      >
+                        Show all reports
+                      </button>
+                    </div>
+                  )}
+                </Card>
               </div>
 
-              <div className="grid gap-6">
-                {patientData.reports.map((report, index) => (
-                  <Card key={report.id} className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                          <Stethoscope className="w-5 h-5 text-green-600" />
-                        </div>
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-800">Report #{report.id}</h4>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              {new Date(report.date).toLocaleDateString('en-IN')}
+              {/* Reports Section */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center gap-3 mb-6">
+                  <FileText className="w-6 h-6 text-gray-700" />
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {selectedDate ? `Reports for ${new Date(selectedDate).toLocaleDateString('en-IN')}` : 'All Medical Reports'}
+                  </h3>
+                  <Badge className="bg-blue-100 text-blue-800">
+                    {filteredReports.length} reports
+                  </Badge>
+                </div>
+
+                {filteredReports.length > 0 ? (
+                  <div className="grid gap-6">
+                    {filteredReports.map((report, index) => (
+                      <Card key={report.id} className="p-6 bg-white border-0 shadow-lg hover:shadow-xl transition-shadow">
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                              <Stethoscope className="w-5 h-5 text-green-600" />
                             </div>
-                            <span>•</span>
-                            <span>{report.doctor}</span>
+                            <div>
+                              <h4 className="text-lg font-semibold text-gray-800">Report #{report.id}</h4>
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
+                                <div className="flex items-center gap-1">
+                                  <Calendar className="w-4 h-4" />
+                                  {new Date(report.date).toLocaleDateString('en-IN')}
+                                </div>
+                                <span>•</span>
+                                <span>{report.doctor}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-green-100 text-green-800">
+                              {report.status}
+                            </Badge>
+                            <button
+                              onClick={() => downloadReport(report)}
+                              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Download Report"
+                            >
+                              <Download className="w-5 h-5" />
+                            </button>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-green-100 text-green-800">
-                          {report.status}
-                        </Badge>
-                        <button
-                          onClick={() => downloadReport(report)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title="Download Report"
-                        >
-                          <Download className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                      {/* Diagnosis */}
-                      <div>
-                        <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                          Diagnosis
-                        </h5>
-                        <p className="text-gray-800">{report.diagnosis}</p>
-                      </div>
+                        <div className="grid md:grid-cols-3 gap-6">
+                          {/* Diagnosis */}
+                          <div>
+                            <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              Diagnosis
+                            </h5>
+                            <p className="text-gray-800">{report.diagnosis}</p>
+                          </div>
 
-                      {/* Symptoms */}
-                      <div>
-                        <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                          Symptoms
-                        </h5>
-                        <ul className="space-y-1">
-                          {report.symptoms.map((symptom, idx) => (
-                            <li key={idx} className="text-gray-800 text-sm">• {symptom}</li>
-                          ))}
-                        </ul>
-                      </div>
+                          {/* Symptoms */}
+                          <div>
+                            <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                              Symptoms
+                            </h5>
+                            <ul className="space-y-1">
+                              {report.symptoms.map((symptom, idx) => (
+                                <li key={idx} className="text-gray-800 text-sm">• {symptom}</li>
+                              ))}
+                            </ul>
+                          </div>
 
-                      {/* Prescription */}
-                      <div>
-                        <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                          Prescription
-                        </h5>
-                        <ul className="space-y-1">
-                          {report.prescription.map((med, idx) => (
-                            <li key={idx} className="text-gray-800 text-sm">• {med}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                          {/* Prescription */}
+                          <div>
+                            <h5 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              Prescription
+                            </h5>
+                            <ul className="space-y-1">
+                              {report.prescription.map((med, idx) => (
+                                <li key={idx} className="text-gray-800 text-sm">• {med}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card className="p-8 text-center bg-white border-0 shadow-lg">
+                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      {selectedDate ? 'No reports for selected date' : 'No reports available'}
+                    </h3>
+                    <p className="text-gray-600">
+                      {selectedDate 
+                        ? 'This patient has no medical reports on the selected date.'
+                        : 'This patient has no medical reports yet.'
+                      }
+                    </p>
                   </Card>
-                ))}
+                )}
               </div>
             </div>
           </div>
