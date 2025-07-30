@@ -20,6 +20,7 @@ export default function PatientEntryForm() {
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [soapNotes, setSoapNotes] = useState(null);
+  const [recordingStopped, setRecordingStopped] = useState(false); // New state to track if recording was stopped
   const [editableSoap, setEditableSoap] = useState({
     symptoms: [],
     observations: [],
@@ -48,6 +49,15 @@ export default function PatientEntryForm() {
       gender: '',
       dateOfVisit: '29/07/2025',
       contactNumber: ''
+    });
+    // Reset SOAP notes section
+    setRecordingStopped(false);
+    setSoapNotes(null);
+    setEditableSoap({
+      symptoms: [],
+      observations: [],
+      prescription: [],
+      remarks: ''
     });
   };
 
@@ -80,6 +90,7 @@ export default function PatientEntryForm() {
         setTranscript(data.transcript);
         setSoapNotes(data.soap_notes);
         setIsRecording(false);
+        setRecordingStopped(true); // Set this to true when recording stops
         setEditableSoap(data.soap_notes);
       } else {
         alert("❌ Error: " + data.error);
@@ -207,7 +218,7 @@ export default function PatientEntryForm() {
                     type="button"
                     onClick={handleStartRecording}
                     disabled={loading}
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
                   >
                     <span>🎙️ Start Voice Recording</span>
                   </button>
@@ -216,7 +227,7 @@ export default function PatientEntryForm() {
                     type="button"
                     onClick={handleStopRecording}
                     disabled={loading}
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 disabled:opacity-50 animate-pulse"
                   >
                     <span>⏹️ Stop Voice Recording</span>
                   </button>
@@ -227,13 +238,13 @@ export default function PatientEntryForm() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                   >
                     Save Patient Info
                   </button>
@@ -241,99 +252,187 @@ export default function PatientEntryForm() {
               </div>
             </form>
           </div>
+
+          {/* SOAP Notes Section - Only show after recording is stopped */}
+          {recordingStopped && editableSoap && (
+            <div className="mt-8 bg-white rounded-xl shadow-lg overflow-hidden animate-fadeIn">
+              {/* SOAP Notes Header */}
+              <div className="bg-gradient-to-r from-green-600 to-emerald-500 px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-white/20 rounded-full p-2">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white">SOAP Notes</h3>
+                      <p className="text-green-100 text-sm">Review and edit the generated medical notes</p>
+                    </div>
+                  </div>
+                  <div className="bg-white/20 px-3 py-1 rounded-full">
+                    <span className="text-white text-xs font-medium">✨ AI Generated</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* SOAP Notes Body */}
+              <div className="p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Symptoms */}
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-800">
+                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                      <span>Symptoms</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editableSoap.symptoms.join(", ")}
+                      onChange={(e) =>
+                        setEditableSoap((prev) => ({
+                          ...prev,
+                          symptoms: e.target.value.split(",").map((s) => s.trim())
+                        }))
+                      }
+                      className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-gray-50 hover:bg-white"
+                      placeholder="List patient symptoms..."
+                    />
+                  </div>
+
+                  {/* Observations */}
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-800">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>Observations</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editableSoap.observations.join(", ")}
+                      onChange={(e) =>
+                        setEditableSoap((prev) => ({
+                          ...prev,
+                          observations: e.target.value.split(",").map((o) => o.trim())
+                        }))
+                      }
+                      className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-gray-50 hover:bg-white"
+                      placeholder="Clinical observations and findings..."
+                    />
+                  </div>
+                </div>
+
+                {/* Prescription - Full Width */}
+                <div className="mt-6 space-y-2">
+                  <label className="flex items-center space-x-2 text-sm font-semibold text-gray-800">
+                    <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                    <span>Prescription</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={editableSoap.prescription.join(", ")}
+                    onChange={(e) =>
+                      setEditableSoap((prev) => ({
+                        ...prev,
+                        prescription: e.target.value.split(",").map((p) => p.trim())
+                      }))
+                    }
+                    className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-gray-50 hover:bg-white"
+                    placeholder="Prescribed medications and treatments..."
+                  />
+                </div>
+
+                {/* Remarks - Full Width */}
+                <div className="mt-6 space-y-2">
+                  <label className="flex items-center space-x-2 text-sm font-semibold text-gray-800">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span>Additional Remarks</span>
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editableSoap.remarks}
+                    onChange={(e) =>
+                      setEditableSoap((prev) => ({ ...prev, remarks: e.target.value }))
+                    }
+                    className="w-full p-4 border-2 border-gray-200 rounded-lg focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 bg-gray-50 hover:bg-white"
+                    placeholder="Any additional notes or follow-up instructions..."
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-between items-center pt-6 border-t border-gray-200">
+                  <div className="flex items-center space-x-2 text-sm text-gray-600">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Review all fields before exporting</span>
+                  </div>
+                  
+                  <div className="flex space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRecordingStopped(false);
+                        setSoapNotes(null);
+                        setEditableSoap({
+                          symptoms: [],
+                          observations: [],
+                          prescription: [],
+                          remarks: ''
+                        });
+                      }}
+                      className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all duration-200 font-medium"
+                    >
+                      Reset Notes
+                    </button>
+                    
+                    <button
+                      className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
+                      onClick={() => {
+                        const payload = {
+                          ...formData,
+                          ...editableSoap,
+                          doctorName: "Dr. HOD. Lanth", // or make this dynamic
+                          clinicName: "Rakshaa Health Clinic",
+                          clinicAddress: "123 Wellness Street, Delhi",
+                          contact: "+91 9876543210",
+                        };
+
+                        // Store in localStorage (safer for long data than URL)
+                        localStorage.setItem("pdfData", JSON.stringify(payload));
+
+                        router.push("/pdf-template");
+                      }}
+                    >
+                      <span className="flex items-center space-x-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Export to PDF</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </main>
       </div>
-      {editableSoap && (
-        <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-xl">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">🧾 Editable SOAP Notes</h2>
-
-          {/* Symptoms */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-1">Symptoms</label>
-            <textarea
-              rows={2}
-              value={editableSoap.symptoms.join(", ")}
-              onChange={(e) =>
-                setEditableSoap((prev) => ({
-                  ...prev,
-                  symptoms: e.target.value.split(",").map((s) => s.trim())
-                }))
-              }
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
-
-          {/* Observations */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-1">Observations</label>
-            <textarea
-              rows={2}
-              value={editableSoap.observations.join(", ")}
-              onChange={(e) =>
-                setEditableSoap((prev) => ({
-                  ...prev,
-                  observations: e.target.value.split(",").map((o) => o.trim())
-                }))
-              }
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
-
-          {/* Prescription */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-1">Prescription</label>
-            <textarea
-              rows={3}
-              value={editableSoap.prescription.join(", ")}
-              onChange={(e) =>
-                setEditableSoap((prev) => ({
-                  ...prev,
-                  prescription: e.target.value.split(",").map((p) => p.trim())
-                }))
-              }
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
-
-          {/* Remarks */}
-          <div className="mb-4">
-            <label className="block text-gray-700 font-medium mb-1">Remarks</label>
-            <textarea
-              rows={2}
-              value={editableSoap.remarks}
-              onChange={(e) =>
-                setEditableSoap((prev) => ({ ...prev, remarks: e.target.value }))
-              }
-              className="w-full p-3 border rounded-lg"
-            />
-          </div>
-
-          <div className="text-right">
-            <button
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              onClick={() => {
-                const payload = {
-                  ...formData,
-                  ...editableSoap,
-                  doctorName: "Dr. HOD. Lanth", // or make this dynamic
-                  clinicName: "Rakshaa Health Clinic",
-                  clinicAddress: "123 Wellness Street, Delhi",
-                  contact: "+91 9876543210",
-                };
-
-                // Store in localStorage (safer for long data than URL)
-                localStorage.setItem("pdfData", JSON.stringify(payload));
-
-                router.push("/pdf-template");
-              }}
-
-            >
-              📄 Export to PDF
-            </button>
-          </div>
-        </div>
-      )}
       <Footer />
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out;
+        }
+      `}</style>
     </>
   );
 }
