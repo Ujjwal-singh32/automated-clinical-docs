@@ -141,9 +141,9 @@ export default function PatientEntryForm() {
                   />
                 </div>
 
-                {/* Patient ID */}
+                {/* Mobile No. */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Patient ID</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Mobile No.</label>
                   <input
                     type="text"
                     name="patientId"
