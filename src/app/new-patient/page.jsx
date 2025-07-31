@@ -65,7 +65,7 @@ export default function PatientEntryForm() {
   const handleStartRecording = async () => {
     setLoading(true);
     try {
-      await fetch("http://localhost:5000/start", { method: "POST" });
+      await fetch("http://localhost:5050/start", { method: "POST" });
       setIsRecording(true);
     } catch (err) {
       alert("Failed to start voice recording.");
@@ -76,7 +76,7 @@ export default function PatientEntryForm() {
   const handleStopRecording = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/stop", {
+      const response = await fetch("http://localhost:5050/stop", {
         method: "POST",
       });
 
@@ -141,13 +141,13 @@ export default function PatientEntryForm() {
                   />
                 </div>
 
-                {/* Mobile No. */}
+                {/* Weight. */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Mobile No.</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Weight</label>
                   <input
-                    type="text"
-                    name="patientId"
-                    value={formData.patientId}
+                    type="number"
+                    name="age"
+                    value={formData.age}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -218,7 +218,7 @@ export default function PatientEntryForm() {
                     type="button"
                     onClick={handleStartRecording}
                     disabled={loading}
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors duration-200 disabled:opacity-50"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
                   >
                     <span>🎙️ Start Voice Recording</span>
                   </button>
