@@ -218,7 +218,7 @@ export default function PatientEntryForm() {
                     type="button"
                     onClick={handleStartRecording}
                     disabled={loading}
-                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
+                    className="flex items-center justify-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-800 transition-colors duration-200 disabled:opacity-50"
                   >
                     <span>🎙️ Start Voice Recording</span>
                   </button>
