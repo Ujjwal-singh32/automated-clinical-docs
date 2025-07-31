@@ -18,5 +18,5 @@ torch==2.7.1
 transformers==4.54.1
 typer==0.4.2
 whisper-openai==1.0.0
-blis==0.7.0 --prefer-binary
+blis==0.7.9 --prefer-binary
 https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.0/en_ner_bc5cdr_md-0.5.0.tar.gz
