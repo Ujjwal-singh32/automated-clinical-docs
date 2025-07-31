@@ -16,15 +16,13 @@
     "@react-pdf/renderer": "^4.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-
-    "dom-to-image": "^2.6.0",
-
     "date-fns": "^4.1.0",
+    "dom-to-image": "^2.6.0",
     "framer-motion": "^12.23.12",
-
     "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.532.0",
+    "mongoose": "^8.17.0",
     "next": "15.4.4",
     "react": "19.1.0",
     "react-calendar": "^6.0.0",
