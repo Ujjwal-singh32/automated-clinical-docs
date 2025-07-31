@@ -33,16 +33,13 @@ export default function MediCareNavbar() {
 
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center space-x-2 justify-center flex-grow overflow-x-auto">
-            <button onClick={() => router.push('/home')} className="px-4 xl:px-6 py-2.5 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-white/20 hover:shadow-lg hover:brightness-110 hover:shadow-md
- text-sm xl:text-base">
+            <button onClick={() => router.push('/home')} className="px-4 xl:px-6 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 hover:shadow-lg hover:brightness-110 hover:shadow-md text-sm xl:text-base">
               My Dashboard
             </button>
-            <button onClick={() => router.push('/new-patient')} className="px-4 xl:px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 rounded-xl transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:brightness-110 hover:shadow-md
- text-sm xl:text-base">
+            <button onClick={() => router.push('/new-patient')} className="px-4 xl:px-6 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 hover:shadow-lg hover:brightness-110 hover:shadow-md text-sm xl:text-base">
               Add New Patient
             </button>
-            <button onClick={() => router.push('/old-patient')} className="px-4 xl:px-6 py-2.5 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-white/20 hover:shadow-lg hover:brightness-110 hover:shadow-md
- text-sm xl:text-base">
+            <button onClick={() => router.push('/old-patient')} className="px-4 xl:px-6 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 hover:shadow-lg hover:brightness-110 hover:shadow-md text-sm xl:text-base">
               Old Patient
             </button>
           </div>
@@ -83,13 +80,13 @@ export default function MediCareNavbar() {
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-white/10">
             <div className="flex flex-col space-y-3">
-              <button onClick={() => { router.push('/home'); setMobileMenuOpen(false); }} className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-white/20 text-left">
+              <button onClick={() => { router.push('/home'); setMobileMenuOpen(false); }} className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 text-left">
                 My Dashboard
               </button>
-              <button onClick={() => { router.push('/new-patient'); setMobileMenuOpen(false); }} className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 rounded-xl transition-all duration-300 font-medium shadow-lg text-left">
+              <button onClick={() => { router.push('/new-patient'); setMobileMenuOpen(false); }} className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 hover:shadow-lg text-left">
                 Add New Patient
               </button>
-              <button onClick={() => { router.push('/old-patient'); setMobileMenuOpen(false); }} className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-white/20 text-left">
+              <button onClick={() => { router.push('/old-patient'); setMobileMenuOpen(false); }} className="px-4 py-2.5 text-white/90 hover:text-white hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 rounded-xl transition-all duration-300 font-medium backdrop-blur-sm border border-white/10 hover:border-blue-500/30 text-left">
                 Old Patient
               </button>
 
