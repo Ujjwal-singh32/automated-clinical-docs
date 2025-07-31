@@ -1,140 +1,156 @@
+
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
+// --- CENTRED & SPACED WHITE/BLACK THEME ---
 const styles = StyleSheet.create({
   page: {
     fontFamily: 'Times-Roman',
     fontSize: 10,
     padding: 0,
-    backgroundColor: '#f3f4f6',
-    color: '#111827',
-    lineHeight: 1.4,
+    backgroundColor: '#fff',
+    color: '#111',
+    lineHeight: 1.5,
   },
   container: {
     margin: 24,
-    border: '1.5px solid #374151',
-    borderRadius: 8,
+    border: '1.5px solid #111',
+    borderRadius: 12,
     backgroundColor: '#fff',
-    boxShadow: '0 6px 18px rgba(0,0,0,0.12)',
+    boxShadow: '0 8px 32px #1112',
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: '#111827',
+    backgroundColor: '#111',
     color: '#fff',
-    padding: 20,
-    borderBottom: '2px solid #374151',
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
+    paddingTop: 36,
+    paddingBottom: 32,
+    paddingLeft: 24,
+    paddingRight: 24,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    borderBottom: '2px solid #000',
+    alignItems: 'center',
+    textAlign: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: 'bold',
     textTransform: 'uppercase',
-    marginBottom: 6,
-    fontFamily: 'Times-Bold',
     letterSpacing: 2,
+    color: '#fff',
+    marginBottom: 10,
   },
-  subtitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginBottom: 2,
-    textTransform: 'uppercase',
-    color: '#111827',
-    marginTop: 8,
+  detailsLine: {
+    fontSize: 12,
+    color: '#fff',
+    marginBottom: 3,
+    fontWeight: 'normal',
     letterSpacing: 1,
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 3,
+  headerSpacer: {
+    height: 14,
   },
-  label: {
-    fontWeight: 'bold',
-    fontSize: 10,
-    color: '#4b5563',
-    letterSpacing: 0.5,
-  },
-  value: {
-    fontSize: 10,
-    color: '#111827',
-    fontWeight: 'medium',
-  },
-  divider: {
-    borderBottom: '1px solid #d1d5db',
-    marginVertical: 8,
+  reportTitle: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#fff",
+    marginTop: 16,
+    letterSpacing: 1,
+    textAlign: "center",
   },
   section: {
-    margin: 18,
+    margin: 20,
     marginBottom: 0,
     paddingBottom: 0,
-    backgroundColor: '#f9fafb',
-    borderRadius: 6,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-    padding: 12,
+    backgroundColor: '#f6f6f6',
+    borderRadius: 8,
+    boxShadow: '0 2px 12px #1110',
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
+    color: '#111',
+    marginBottom: 5,
     textTransform: 'uppercase',
     letterSpacing: 1,
+    borderBottom: '1.5px solid #111',
+    paddingBottom: 3,
+    textAlign: 'left',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  label: {
+    fontWeight: 'bold',
+    fontSize: 10,
+    color: '#111',
+    letterSpacing: 0.5,
+  },
+  value: {
+    fontSize: 10,
+    color: '#111',
+    fontWeight: 600,
   },
   sectionDesc: {
     fontSize: 9,
-    color: '#4b5563',
+    color: '#111',
     marginBottom: 8,
     fontStyle: 'italic',
   },
   listItem: {
     flexDirection: 'row',
-    marginBottom: 5,
+    marginBottom: 7,
     alignItems: 'flex-start',
     backgroundColor: '#fff',
-    borderLeft: '3px solid #9ca3af',
+    borderLeft: '3px solid #111',
     borderRadius: 4,
-    paddingLeft: 8,
-    paddingTop: 3,
-    paddingBottom: 3,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+    paddingLeft: 10,
+    paddingTop: 4,
+    paddingBottom: 4,
+    boxShadow: '0 1px 4px #1111',
   },
   listIndex: {
     width: 18,
     fontWeight: 'bold',
-    color: '#2563eb',
-    marginRight: 6,
+    color: '#fff',
+    marginRight: 8,
     fontSize: 11,
-    backgroundColor: '#e0e7ff',
+    backgroundColor: '#111',
     borderRadius: 4,
     textAlign: 'center',
     padding: 2,
+    border: '1px solid #111',
   },
   listText: {
     fontSize: 10,
-    color: '#111827',
+    color: '#111',
     flex: 1,
-    fontWeight: 'medium',
+    fontWeight: 600,
   },
   remarks: {
     fontStyle: 'italic',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#f1f1f1',
     padding: 10,
-    borderLeft: '3px solid #2563eb',
+    borderLeft: '3px solid #111',
     borderRadius: 6,
-    marginTop: 6,
-    color: '#374151',
+    marginTop: 8,
+    color: '#111',
     fontSize: 10,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 1px 4px #1111',
   },
   sealBox: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 18,
-    gap: 18,
+    marginTop: 22,
+    gap: 20,
   },
   seal: {
     fontSize: 10,
-    color: '#374151',
+    color: '#111',
     marginTop: 4,
     textAlign: 'center',
     fontWeight: 'bold',
@@ -146,74 +162,114 @@ const styles = StyleSheet.create({
     objectFit: 'contain',
     alignSelf: 'center',
     borderRadius: 6,
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    boxShadow: '0 2px 8px #1113',
   },
   sealImgBox: {
     alignItems: 'center',
-    backgroundColor: '#e0e7ff',
+    backgroundColor: '#fafafa',
     padding: 10,
     borderRadius: 10,
     marginBottom: 4,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+    boxShadow: '0 1px 4px #1111',
   },
   sealImg: {
-    height: 44,
-    width: 44,
+    height: 80,
+    width: 100,
     objectFit: 'contain',
     borderRadius: 8,
-    border: '1px solid #2563eb',
+    border: '1px solid #111',
     backgroundColor: '#fff',
   },
   footer: {
-    borderTop: '2px solid #374151',
-    backgroundColor: '#e0e7ff',
-    padding: 16,
-    borderBottomLeftRadius: 8,
-    borderBottomRightRadius: 8,
-    marginTop: 18,
-    boxShadow: '0 -2px 8px rgba(0,0,0,0.04)',
+    borderTop: '2px solid #111',
+    backgroundColor: '#fafafa',
+    padding: 20,
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    marginTop: 22,
+    boxShadow: '0 -2px 8px #1111',
   },
 });
 
-
 const MedicalReportPDF = ({ data }) => {
-  if (!data) return null; // safety fallback
-
+  if (!data) return null;
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.container}>
-          {/* Header */}
+          {/* Header - All Centered Details */}
           <View style={styles.header}>
-            <Text style={styles.title}>{data.clinicName}</Text>
-            <Text>{data.clinicAddress}</Text>
-            <Text>{data.contact}</Text>
-            <Text>Email: info@metromedical.org | www.metropolitanmedical.org</Text>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', marginTop: 10, letterSpacing: 1 }}>
-              MEDICAL CONSULTATION REPORT
+            <Text style={styles.title}>Medicare Health</Text>
+            <View style={styles.headerSpacer} />
+            <Text style={styles.detailsLine}>{data.clinicAddress}</Text>
+            <Text style={styles.detailsLine}>{data.contact}</Text>
+            <Text style={styles.detailsLine}>
+              Email: medicare.health.app@gmail.com
             </Text>
+            <Text style={styles.detailsLine}>
+              Website: www.medicarehealth.com
+            </Text>
+            <View style={styles.headerSpacer} />
+            <Text style={styles.reportTitle}>MEDICAL CONSULTATION REPORT</Text>
           </View>
 
-          {/* Patient Info */}
+          {/* Patient Info Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Patient Information</Text>
-            <View style={styles.infoRow}><Text style={styles.label}>Attending Physician:</Text><Text style={styles.value}>{data.doctorName}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Date:</Text><Text style={styles.value}>{data.date}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Department:</Text><Text style={styles.value}>Internal Medicine</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Medical License:</Text><Text style={styles.value}>MD-{Math.random().toString(36).substr(2, 6).toUpperCase()}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Patient Name:</Text><Text style={styles.value}>{data.patientName?.toUpperCase()}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Age:</Text><Text style={styles.value}>{data.age || '—'}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Gender:</Text><Text style={styles.value}>{data.gender || '—'}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Blood Type:</Text><Text style={styles.value}>{data.bloodType || '—'}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Weight:</Text><Text style={styles.value}>{data.weight || '—'}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Patient ID:</Text><Text style={styles.value}>PT-{Math.random().toString(36).substr(2, 6).toUpperCase()}</Text></View>
-            <View style={styles.infoRow}><Text style={styles.label}>Contact:</Text><Text style={styles.value}>{data.patientContact || '—'}</Text></View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Attending Physician:</Text>
+              <Text style={styles.value}>{data.doctorName}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Date:</Text>
+              <Text style={styles.value}>{data.dateOfVisit}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Department:</Text>
+              <Text style={styles.value}>Internal Medicine</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Medical License:</Text>
+              <Text style={styles.value}>
+                MD-{Math.random().toString(36).substr(2, 6).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Patient Name:</Text>
+              <Text style={styles.value}>{data.patientName?.toUpperCase()}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Age:</Text>
+              <Text style={styles.value}>{data.age || "—"}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Gender:</Text>
+              <Text style={styles.value}>{data.gender || "—"}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Weight:</Text>
+              <Text style={styles.value}>{data.weight || "—"}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Patient ID:</Text>
+              <Text style={styles.value}>
+                PT-{Math.random().toString(36).substr(2, 6).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.label}>Contact:</Text>
+              <Text style={styles.value}>{data.contactNumber|| "—"}</Text>
+            </View>
           </View>
 
           {/* Symptoms */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Chief Complaints & Presenting Symptoms</Text>
-            <Text style={styles.sectionDesc}>As reported by patient during consultation</Text>
+            <Text style={styles.sectionTitle}>
+              Chief Complaints & Presenting Symptoms
+            </Text>
+            <Text style={styles.sectionDesc}>
+              As reported by patient during consultation
+            </Text>
             {data.symptoms?.map((symptom, idx) => (
               <View style={styles.listItem} key={idx}>
                 <Text style={styles.listIndex}>{idx + 1}.</Text>
@@ -224,8 +280,12 @@ const MedicalReportPDF = ({ data }) => {
 
           {/* Observations */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Clinical Examination & Observations</Text>
-            <Text style={styles.sectionDesc}>Physical examination findings and vital signs</Text>
+            <Text style={styles.sectionTitle}>
+              Clinical Examination & Observations
+            </Text>
+            <Text style={styles.sectionDesc}>
+              Physical examination findings and vital signs
+            </Text>
             {data.observations?.map((observation, idx) => (
               <View style={styles.listItem} key={idx}>
                 <Text style={styles.listIndex}>{idx + 1}.</Text>
@@ -236,8 +296,12 @@ const MedicalReportPDF = ({ data }) => {
 
           {/* Prescription */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Prescription & Treatment Protocol</Text>
-            <Text style={styles.sectionDesc}>Prescribed medications and dosage instructions</Text>
+            <Text style={styles.sectionTitle}>
+              Prescription & Treatment Protocol
+            </Text>
+            <Text style={styles.sectionDesc}>
+              Prescribed medications and dosage instructions
+            </Text>
             {data.prescription?.map((med, idx) => (
               <View style={styles.listItem} key={idx}>
                 <Text style={styles.listIndex}>{idx + 1}.</Text>
@@ -248,14 +312,18 @@ const MedicalReportPDF = ({ data }) => {
 
           {/* Remarks */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Physician Notes & Clinical Remarks</Text>
-            <Text style={styles.sectionDesc}>Additional observations and recommendations</Text>
+            <Text style={styles.sectionTitle}>
+              Physician Notes & Clinical Remarks
+            </Text>
+            <Text style={styles.sectionDesc}>
+              Additional observations and recommendations
+            </Text>
             <View style={styles.remarks}>
-              <Text>"{data.remarks || 'No remarks provided.'}"</Text>
+              <Text>"{data.remarks || "No remarks provided."}"</Text>
             </View>
           </View>
 
-          {/* Footer/Seal/Signature */}
+          {/* Footer / Seal / Signature */}
           <View style={styles.footer}>
             <View style={styles.sealBox}>
               <View style={{ flex: 1, marginRight: 10 }}>
@@ -263,8 +331,12 @@ const MedicalReportPDF = ({ data }) => {
                 <View style={styles.sealImgBox}>
                   <Image style={styles.sealImg} src="/medical-seal.jpg" />
                 </View>
-                <Text style={styles.seal}>Valid only with official seal impression</Text>
-                <Text style={styles.seal}>SEAL-{Math.random().toString(36).substr(2, 8).toUpperCase()}</Text>
+                <Text style={styles.seal}>
+                  Valid only with official seal impression
+                </Text>
+                <Text style={styles.seal}>
+                  SEAL-{Math.random().toString(36).substr(2, 8).toUpperCase()}
+                </Text>
               </View>
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.sectionTitle}>Physician Authorization</Text>

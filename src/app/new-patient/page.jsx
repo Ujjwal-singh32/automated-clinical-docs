@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRouter } from 'next/navigation';// correct for Pages Router
@@ -6,14 +7,24 @@ import { useState } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import Head from 'next/head';
+function getCurrentDateDDMMYYYY() {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');     // day with leading zero if needed
+  const mm = String(today.getMonth() + 1).padStart(2, '0'); // months are zero-based
+  const yyyy = today.getFullYear();
+
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 export default function PatientEntryForm() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     patientName: '',
     patientId: '',
     age: '',
+    weight : '',
     gender: '',
-    dateOfVisit: '29/07/2025',
+    dateOfVisit: getCurrentDateDDMMYYYY(),
     contactNumber: ''
   });
   const [isRecording, setIsRecording] = useState(false);
@@ -46,8 +57,9 @@ export default function PatientEntryForm() {
       patientName: '',
       patientId: '',
       age: '',
+      weight : '',
       gender: '',
-      dateOfVisit: '29/07/2025',
+      dateOfVisit: getCurrentDateDDMMYYYY(),
       contactNumber: ''
     });
     // Reset SOAP notes section
@@ -146,8 +158,8 @@ export default function PatientEntryForm() {
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Weight</label>
                   <input
                     type="number"
-                    name="age"
-                    value={formData.age}
+                    name="weight"
+                    value={formData.weight}
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -220,7 +232,7 @@ export default function PatientEntryForm() {
                     disabled={loading}
                     className="flex items-center justify-center space-x-2 px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
                   >
-                    <span>🎙️ Start Voice Recording</span>
+                    <span>🎙 Start Voice Recording</span>
                   </button>
                 ) : (
                   <button
@@ -229,7 +241,7 @@ export default function PatientEntryForm() {
                     disabled={loading}
                     className="flex items-center justify-center space-x-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200 disabled:opacity-50 animate-pulse"
                   >
-                    <span>⏹️ Stop Voice Recording</span>
+                    <span>⏹ Stop Voice Recording</span>
                   </button>
                 )}
 
@@ -385,9 +397,9 @@ export default function PatientEntryForm() {
                         const payload = {
                           ...formData,
                           ...editableSoap,
-                          doctorName: "Dr. HOD. Lanth", // or make this dynamic
-                          clinicName: "Rakshaa Health Clinic",
-                          clinicAddress: "123 Wellness Street, Delhi",
+                          doctorName: "Dr Bavuma Lanth", // or make this dynamic
+                          clinicName: "Medicare Health",
+                          clinicAddress: "Medicare Clinic, NIT Jamshedpur",
                           contact: "+91 9876543210",
                         };
 

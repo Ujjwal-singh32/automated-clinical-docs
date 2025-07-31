@@ -1,125 +1,124 @@
 "use client";
-//kallu is op very good
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
+import { Pencil } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import MediCareNavbar from "@/components/ui/Navbar";
+import MediCareFooter from "@/components/ui/Footer";
 
-export default function DoctorProfileForm() {
+export default function DoctorProfilePage() {
   const [formData, setFormData] = useState({
     name: "",
     age: "",
     qualification: "",
+    contact: "",
     experience: "",
     pastHospitals: "",
     currentHospital: "",
+    signatureUrl: "",
+    stampUrl: "",
   });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const { user } = useUser();
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Doctor Profile Submitted:", formData);
-  };
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      if (!user?.id || !user?.fullName) return;
+
+      try {
+        const res = await fetch("/api/doctor/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: user.id,
+            name: user.fullName,
+          }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.doctor) {
+          setFormData({
+            name: data.doctor.name || "",
+            age: data.doctor.age || "",
+            qualification: data.doctor.qualification || "",
+            contact: data.doctor.contact || "",
+            experience: data.doctor.experience || "",
+            pastHospitals: data.doctor.pastHospitals || "",
+            currentHospital: data.doctor.currentHospital || "",
+            signatureUrl: data.doctor.signatureUrl || "",
+            stampUrl: data.doctor.stampUrl || "",
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      }
+    };
+
+    fetchDoctor();
+  }, [user?.id, user?.fullName]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-50 flex items-center justify-center p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-2xl"
-      >
-        <Card className="shadow-2xl rounded-2xl border-indigo-100">
-          <CardContent className="p-10">
-            <h2 className="text-4xl font-bold text-indigo-800 mb-8 text-center tracking-wide">
-              🩺 Doctor Profile Form
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-indigo-700 text-sm font-semibold">Full Name</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Dr. Jane Smith"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
+    <>
+      <div className="bg-gradient-to-br from-purple-100 to-indigo-100 min-h-screen flex flex-col">
+        <MediCareNavbar />
+        <main className="flex-grow">
+          <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-50 flex flex-col items-center px-4 pt-10 pb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="w-full max-w-2xl"
+            >
+              <Card className="shadow-2xl rounded-2xl border-indigo-100">
+                <CardContent className="p-10 relative">
+                  <h2 className="text-4xl font-bold text-indigo-800 mb-8 text-center tracking-wide">
+                    🧑‍⚕️ Doctor Profile
+                  </h2>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="age" className="text-indigo-700 text-sm font-semibold">Age</Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="number"
-                    placeholder="45"
-                    value={formData.age}
-                    onChange={handleChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="experience" className="text-indigo-700 text-sm font-semibold">Experience (Years)</Label>
-                  <Input
-                    id="experience"
-                    name="experience"
-                    type="number"
-                    placeholder="20"
-                    value={formData.experience}
-                    onChange={handleChange}
-                  />
-                </div>
-              </div>
+                  <div className="space-y-4 text-indigo-900 font-medium">
+                    <p><strong>Name:</strong> {formData.name || "—"}</p>
+                    <p><strong>Age:</strong> {formData.age || "—"}</p>
+                    <p><strong>Qualification:</strong> {formData.qualification || "—"}</p>
+                    <p><strong>Contact:</strong> {formData.contact || "—"}</p>
+                    <p><strong>Experience:</strong> {formData.experience || "—"} years</p>
+                    <p><strong>Past Hospitals:</strong> {formData.pastHospitals || "—"}</p>
+                    <p><strong>Current Hospital:</strong> {formData.currentHospital || "—"}</p>
+                    {formData.signatureUrl && (
+                      <p>
+                        <strong>Signature:</strong>{" "}
+                        <a href={formData.signatureUrl} target="_blank" className="text-blue-600 underline">View</a>
+                      </p>
+                    )}
+                    {formData.stampUrl && (
+                      <p>
+                        <strong>Stamp:</strong>{" "}
+                        <a href={formData.stampUrl} target="_blank" className="text-blue-600 underline">View</a>
+                      </p>
+                    )}
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="qualification" className="text-indigo-700 text-sm font-semibold">Qualification / Degree</Label>
-                <Input
-                  id="qualification"
-                  name="qualification"
-                  placeholder="MBBS, MD, PhD"
-                  value={formData.qualification}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pastHospitals" className="text-indigo-700 text-sm font-semibold">Past Worked Hospitals</Label>
-                <Textarea
-                  id="pastHospitals"
-                  name="pastHospitals"
-                  placeholder="E.g., Apollo Hospital, Fortis Hospital..."
-                  value={formData.pastHospitals}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="currentHospital" className="text-indigo-700 text-sm font-semibold">Current Hospital</Label>
-                <Input
-                  id="currentHospital"
-                  name="currentHospital"
-                  placeholder="Max Healthcare, Delhi"
-                  value={formData.currentHospital}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div className="flex justify-center pt-4">
-                <Button type="submit" className="w-full md:w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-xl">
-                  Save Profile
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
+                  {/* Pencil button inside Card, bottom-right */}
+                  <div className="absolute bottom-4 right-4">
+                    <Button
+                      className="rounded-full p-3 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg"
+                      onClick={() => router.push("/add-profile")}
+                    >
+                      <Pencil className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+        </main>
+        <MediCareFooter />
+      </div>
+    </>
   );
 }
