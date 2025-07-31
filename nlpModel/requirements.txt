@@ -1,5 +1,0 @@
-scispacy==0.5.5
-spacy==3.4.4
-torch==1.12.1
-google-generativeai==0.8.5
-translate==3.6.1

@@ -1,5 +1,7 @@
 Flask==2.3.3
 flask-cors==4.0.0
-SpeechRecognition==3.10.0
-deep-translator==1.11.4
-pyaudio==0.2.13
+numpy==1.26.4
+sounddevice==0.4.6
+torch==2.2.2
+whisper @ git+https://github.com/openai/whisper.git
+scipy==1.13.0
