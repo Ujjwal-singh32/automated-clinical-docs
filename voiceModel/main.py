@@ -120,6 +120,9 @@ def stop_recording():
 
     return {"status": "not recording"}, 400
 
+@app.get("/")
+def index():
+    return {"status": "Model is running ✅"}, 200
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(port=5050)
