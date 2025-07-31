@@ -1,45 +1,47 @@
-import { NextResponse } from 'next/server';
-import { getAuth } from '@clerk/nextjs/server';
-import connectDB from '@/lib/connectDB'; // Make sure this connects to Mongo
-import Doctor from '@/models/Doctor';
-import { writeFile } from 'fs/promises';
-import path from 'path';
-
-export async function GET(req) {
-  await connectDB();
-  const { userId } = getAuth(req);
-  const doctor = await Doctor.findOne({ userId });
-  return NextResponse.json(doctor || {}, { status: 200 });
-}
+import { NextResponse } from "next/server";
+import { getAuth } from "@clerk/nextjs/server";
+import connectDB from "@/lib/db";
+import Doctor from "@/models/doctorModel";
 
 export async function POST(req) {
-  await connectDB();
-  const { userId } = getAuth(req);
+  try {
+    await connectDB();
 
-  const formData = await req.formData();
-  const fields = Object.fromEntries(formData.entries());
+    const body = await req.json();
+    const { userId,name } = body;
+    
+    if (!userId) {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
+    }
 
-  const signatureFile = formData.get("signatureFile");
-  const stampFile = formData.get("stampFile");
+    if (!name) {
+      return NextResponse.json({ success: false, message: "Missing required field: name" }, { status: 400 });
+    }
 
-  const saveFile = async (file, folder) => {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const filename = `${folder}-${Date.now()}-${file.name}`;
-    const filePath = path.join(process.cwd(), "public/uploads", filename);
-    await writeFile(filePath, buffer);
-    return `/uploads/${filename}`;
-  };
+    const existingDoctor = await Doctor.findOne({ userId });
 
-  const doctor = await Doctor.findOneAndUpdate(
-    { userId },
-    {
-      ...fields,
+    if (existingDoctor) {
+      return NextResponse.json({ success: true, doctor: existingDoctor }, { status: 200 });
+    }
+
+    const newDoctor = new Doctor({
       userId,
-      ...(signatureFile && signatureFile.name ? { signatureUrl: await saveFile(signatureFile, "sig") } : {}),
-      ...(stampFile && stampFile.name ? { stampUrl: await saveFile(stampFile, "stamp") } : {}),
-    },
-    { new: true, upsert: true }
-  );
+      name,
+      age: null,
+      qualification: "",
+      contact: null,
+      experience: null,
+      pastHospitals: "",
+      currentHospital: "",
+      signatureUrl: "",
+      stampUrl: "",
+    });
 
-  return NextResponse.json(doctor, { status: 200 });
+    await newDoctor.save();
+
+    return NextResponse.json({ success: true, doctor: newDoctor }, { status: 201 });
+  } catch (error) {
+    console.error("Error creating doctor:", error);
+    return NextResponse.json({ success: false, message: "Server error" }, { status: 500 });
+  }
 }

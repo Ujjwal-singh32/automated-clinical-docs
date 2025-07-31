@@ -48,6 +48,7 @@ export default function MediCareNavbar() {
           <div className="hidden md:flex items-center space-x-3 flex-shrink-0">
             {isSignedIn ? (
               <>
+              <Link href="/profile" className="flex items-center space-x-3 cursor-pointer group">
                 <div className="w-10 h-10 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 rounded-full overflow-hidden shadow-lg ring-2 ring-white/20">
                   <img src={user?.imageUrl} alt={user?.fullName || "User"} className="w-full h-full object-cover" />
                 </div>
@@ -55,6 +56,7 @@ export default function MediCareNavbar() {
                   <p className="text-white font-semibold">{user?.fullName}</p>
                   <p className="text-purple-200 text-xs">{user?.primaryEmailAddress?.emailAddress}</p>
                 </div>
+                </Link>
               </>
             ) : (
               <SignInButton mode="modal">
@@ -97,12 +99,14 @@ export default function MediCareNavbar() {
                     className="flex items-center justify-between mt-4 px-4 py-2 border-t border-white/10 cursor-pointer"
                     onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
                   >
+                    <Link href="/profile" className="flex items-center space-x-3 cursor-pointer group">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 rounded-full overflow-hidden shadow-lg ring-2 ring-white/20">
                         <img src={user?.imageUrl} alt={user?.fullName || "User"} className="w-full h-full object-cover" />
                       </div>
                       <div className="text-sm text-white font-semibold">{user?.fullName}</div>
                     </div>
+                    </Link>
                     <ChevronDown className={`w-5 h-5 text-white transition-transform ${mobileDropdownOpen ? 'rotate-180' : ''}`} />
                   </div>
                   {mobileDropdownOpen && (
