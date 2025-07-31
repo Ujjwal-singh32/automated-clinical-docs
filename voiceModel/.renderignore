@@ -1,0 +1,12 @@
+__pycache__/
+*.tar.gz
+*.whl
+*.zip
+*.pkl
+*.pt
+*.h5
+node_modules/
+.venv/
+.scispacy/
+*.egg-info/
+.DS_Store
