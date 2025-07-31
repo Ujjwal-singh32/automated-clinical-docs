@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, send_file
 from flask_cors import CORS
 import threading
 import numpy as np
@@ -6,14 +6,22 @@ import sounddevice as sd
 import whisper
 import time
 from nlp_module import run_nlp_pipeline
+import google.generativeai as genai
+import os
+from dotenv import load_dotenv
+import uuid
+import os
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
+load_dotenv()
 # Whisper model
 model = whisper.load_model("base")
 
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+gemini_model = genai.GenerativeModel(model_name="models/gemini-2.0-flash")
 # Config
 SAMPLE_RATE = 16000
 CHANNELS = 1
@@ -22,6 +30,20 @@ CHANNELS = 1
 is_listening = False
 audio_buffer = []
 recording_thread = None
+
+
+def correct_transcript_with_gemini(raw_text):
+    prompt = (
+        "Correct the following medical transcription for spelling and terminology. "
+        "Preserve the meaning and correct any misspelled drug or disease names:\n\n"
+        f"{raw_text}"
+    )
+    try:
+        response = gemini_model.generate_content(prompt)
+        return response.text.strip()
+    except Exception as e:
+        print("❌ Gemini correction error:", e)
+        return raw_text  # Fallback to original if correction fails
 
 
 # Background audio recording thread
@@ -80,8 +102,11 @@ def stop_recording():
 
             print("✅ Transcript:", transcript)
 
+            corrected_transcript = correct_transcript_with_gemini(transcript)
+            print("✅ Corrected Transcript:", corrected_transcript)
+
             # ✅ Send transcript directly to NLP pipeline
-            soap_output = run_nlp_pipeline(transcript)
+            soap_output = run_nlp_pipeline(corrected_transcript)
 
             return {
                 "status": "recording stopped and transcribed",
