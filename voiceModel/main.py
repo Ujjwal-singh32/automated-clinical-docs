@@ -42,14 +42,14 @@ def correct_transcript_with_gemini(raw_text):
         response = gemini_model.generate_content(prompt)
         return response.text.strip()
     except Exception as e:
-        print("❌ Gemini correction error:", e)
+        # print("❌ Gemini correction error:", e)
         return raw_text  # Fallback to original if correction fails
 
 
 # Background audio recording thread
 def record_audio():
     global is_listening, audio_buffer
-    print("🎤 Mic opened...")
+    # print("🎤 Mic opened...")
 
     try:
         with sd.InputStream(
@@ -61,7 +61,7 @@ def record_audio():
     except Exception as e:
         print("❌ Recording Error:", e)
 
-    print("🛑 Mic closed.")
+    # print("🛑 Mic closed.")
 
 
 @app.post("/start")
@@ -85,10 +85,6 @@ def stop_recording():
     if is_listening:
         is_listening = False
         recording_thread.join()
-
-        print("⏳ Waiting 5 seconds to ensure all audio is captured...")
-        time.sleep(5)
-
         full_audio = np.concatenate(audio_buffer, axis=0)
         full_audio = np.squeeze(full_audio)
 
@@ -125,5 +121,5 @@ def index():
     return {"status": "Model is running ✅"}, 200
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5050))
     app.run(host="0.0.0.0", port=port)

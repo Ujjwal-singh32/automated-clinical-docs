@@ -1,10 +1,9 @@
-
-
 "use client";
 import React, { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { format } from "date-fns";
+import { toast } from 'react-toastify';
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import {
@@ -13,69 +12,107 @@ import {
   User,
   ClipboardSignature,
   Info,
-  IdCard,
   XCircle,
 } from "lucide-react";
 import MediCareNavbar from "@/components/ui/Navbar";
 import MediCareFooter from "@/components/ui/Footer";
 
-const mockPatients = [
-  {
-    id: "P001",
-    name: "Rajesh Kumar",
-    date: "2025-07-30",
-    diagnosis: "Diabetes",
-    age: 52,
-    gender: "Male",
-  },
-  {
-    id: "P002",
-    name: "Priya Sharma",
-    date: "2025-07-30",
-    diagnosis: "Hypertension",
-    age: 45,
-    gender: "Female",
-  },
-  {
-    id: "P003",
-    name: "Amit Verma",
-    date: "2025-07-29",
-    diagnosis: "Fever",
-    age: 30,
-    gender: "Male",
-  },
-];
-
 const OldPatientPage = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date("2025-07-30"));
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchId, setSearchId] = useState("");
+  const [allPatients, setAllPatients] = useState([]);
   const [filteredPatients, setFilteredPatients] = useState([]);
 
-  useEffect(() => {
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
-    const result = mockPatients.filter((p) => p.date === dateStr);
-    setFilteredPatients(result);
-  }, [selectedDate]);
+  // Fetch data from API
+  const fetchReports = async () => {
+    try {
+      const res = await fetch("http://localhost:3000/api/report/show");
+      const data = await res.json();
 
-  const handleSearchKey = (e) => {
-    if (e.key === "Enter") {
-      const found = mockPatients.find(
-        (p) => p.id.toLowerCase() === searchId.trim().toLowerCase()
-      );
-      if (found) {
-        setSelectedDate(new Date(found.date));
-        setFilteredPatients([found]);
-      } else {
-        setFilteredPatients([]);
-      }
+      const transformed = data.reports.map((r) => {
+        const fullData = {
+          ...r,
+          reportId: r.reportId || "N/A",
+          attendingPhysician: r.attendingPhysician || "Dr. B. R. Reddy", // fallback
+          dateOfVisit: format(new Date(r.date), "dd MMM yyyy"),
+
+          department: r.department || "General",
+          medicalLicense: r.medicalLicense || "LIC123456",
+          patientName: r.patientName,
+          age: r.age,
+          gender: r.gender,
+          bloodType: r.bloodType || "A+",
+          weight: r.weight || "—",
+          contactNumber: r.contact || "—",
+          symptoms: r.symptoms || [],
+          observations: r.observations || [],
+          prescription: r.prescription || [],
+          remarks: r.remarks || "",
+          doctorName: "Dr BR. Reddy ",
+          clinicName: "Medicare Health",
+          clinicAddress: "Medicare Clinic, NIT Jamshedpur",
+          contact: "+91 9876543210",
+        };
+
+
+        return {
+          id: r.reportId,
+          name: r.patientName,
+          date: format(new Date(r.date), "yyyy-MM-dd"),
+          symptoms: r.symptoms || "—",
+          age: r.age,
+          gender: r.gender,
+          fullData, // Add fullData to each transformed object
+        };
+      });
+
+      setAllPatients(transformed);
+    } catch (err) {
+      console.error("Error fetching reports:", err);
     }
   };
 
+
+  // Filter patients by selected date
+  const filterByDate = (date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    const results = allPatients.filter((p) => p.date === dateStr);
+    setFilteredPatients(results);
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
+
+  useEffect(() => {
+    filterByDate(selectedDate);
+  }, [allPatients, selectedDate]);
+
+  useEffect(() => {
+    const input = searchId.trim().toLowerCase();
+
+    if (input === "") {
+      filterByDate(selectedDate); // Restore date-based results
+      return;
+    }
+
+    const filtered = allPatients.filter((p) =>
+      p.id.toLowerCase().includes(input) // smooth partial match
+    );
+
+    setFilteredPatients(filtered);
+
+    if (filtered.length > 0) {
+      setSelectedDate(new Date(filtered[0].date)); // optional: sync calendar
+    }
+  }, [searchId]);
+
+
+
+
   const handleClearSearch = () => {
     setSearchId("");
-    const dateStr = format(selectedDate, "yyyy-MM-dd");
-    const result = mockPatients.filter((p) => p.date === dateStr);
-    setFilteredPatients(result);
+    filterByDate(selectedDate);
   };
 
   return (
@@ -93,7 +130,6 @@ const OldPatientPage = () => {
                     placeholder="Search Patient ID (e.g., P001)"
                     value={searchId}
                     onChange={(e) => setSearchId(e.target.value)}
-                    onKeyDown={handleSearchKey}
                     className="w-full max-w-xl h-14 text-lg rounded-xl px-5 shadow-md focus:ring-4 focus:ring-purple-300"
                   />
                   {searchId && (
@@ -129,7 +165,7 @@ const OldPatientPage = () => {
                           <div className="flex items-center gap-2">
                             <ClipboardSignature className="w-4 h-4 text-purple-500" />
                             <span>
-                              <strong>Diagnosis:</strong> {p.diagnosis}
+                              <strong>Symptoms:</strong> {p.symptoms}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -151,6 +187,16 @@ const OldPatientPage = () => {
                             </span>
                           </div>
                         </div>
+                        <button
+                          onClick={() => {
+                            localStorage.clear();
+                            localStorage.setItem("pdfDataView", JSON.stringify(p.fullData));
+                            window.location.href = "/pdf-template";
+                          }}
+                          className="ml-6 bg-purple-600 text-white px-5 py-2 rounded-xl text-sm font-semibold hover:bg-purple-700 transition"
+                        >
+                          Download PDF
+                        </button>
                       </Card>
                     ))}
                   </div>
@@ -160,7 +206,7 @@ const OldPatientPage = () => {
               </div>
 
               {/* Right: Calendar */}
-              <div className="lg:col-span-1 bg-white rounded-3xl shadow-xl p-6 border border-purple-300">
+              <div className="lg:col-span-1  top-24 right-10 bg-white rounded-3xl shadow-xl p-6 border border-purple-300 max-h-[450px] overflow-hidden z-50">
                 <h3 className="text-2xl font-bold text-purple-700 flex items-center gap-3 mb-6">
                   <CalendarDays className="w-6 h-6" />
                   Select Date
@@ -173,7 +219,7 @@ const OldPatientPage = () => {
                   }}
                   locale="en-US"
                   className="rounded-xl border-0 shadow-md scale-105"
-                  tileClassName={({ date, view }) =>
+                  tileClassName={({ date }) =>
                     format(date, "yyyy-MM-dd") === format(selectedDate, "yyyy-MM-dd")
                       ? "bg-purple-500 text-white rounded-full"
                       : ""
@@ -190,4 +236,3 @@ const OldPatientPage = () => {
 };
 
 export default OldPatientPage;
-

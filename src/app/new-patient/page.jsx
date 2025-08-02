@@ -2,11 +2,11 @@
 "use client";
 
 import { useRouter } from 'next/navigation';// correct for Pages Router
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import Head from 'next/head';
+import { useUser } from "@clerk/nextjs";
+import { toast } from 'react-toastify';
 function getCurrentDateDDMMYYYY() {
   const today = new Date();
   const dd = String(today.getDate()).padStart(2, '0');     // day with leading zero if needed
@@ -22,11 +22,14 @@ export default function PatientEntryForm() {
     patientName: '',
     patientId: '',
     age: '',
-    weight : '',
+    weight: '',
     gender: '',
     dateOfVisit: getCurrentDateDDMMYYYY(),
-    contactNumber: ''
+    contactNumber: '',
+    attendingPhysician: '',
+    contact: ''
   });
+  const { user } = useUser();
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -38,7 +41,15 @@ export default function PatientEntryForm() {
     prescription: [],
     remarks: ''
   });
-
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        attendingPhysician: user.fullName || '',
+        contact: user.phoneNumbers?.[0]?.phoneNumber || '+91 9912949209'
+      }));
+    }
+  }, [user]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -49,7 +60,7 @@ export default function PatientEntryForm() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    // console.log('Form submitted:', formData);
   };
 
   const handleCancel = () => {
@@ -57,10 +68,12 @@ export default function PatientEntryForm() {
       patientName: '',
       patientId: '',
       age: '',
-      weight : '',
+      weight: '',
       gender: '',
       dateOfVisit: getCurrentDateDDMMYYYY(),
-      contactNumber: ''
+      contactNumber: '',
+      doctorName: '',
+      contact: ''
     });
     // Reset SOAP notes section
     setRecordingStopped(false);
@@ -80,7 +93,7 @@ export default function PatientEntryForm() {
       await fetch("http://localhost:5050/start", { method: "POST" });
       setIsRecording(true);
     } catch (err) {
-      alert("Failed to start voice recording.");
+      toast.error("Failed to start voice recording.");
     }
     setLoading(false);
   };
@@ -95,8 +108,8 @@ export default function PatientEntryForm() {
       const data = await response.json();
 
       if (response.ok) {
-        console.log("📝 Transcript:", data.transcript);
-        console.log("🧠 SOAP Notes:", data.soap_notes);
+        // console.log("📝 Transcript:", data.transcript);
+        // console.log("🧠 SOAP Notes:", data.soap_notes);
 
         // You can store or display it as needed
         setTranscript(data.transcript);
@@ -105,10 +118,10 @@ export default function PatientEntryForm() {
         setRecordingStopped(true); // Set this to true when recording stops
         setEditableSoap(data.soap_notes);
       } else {
-        alert("❌ Error: " + data.error);
+        toast.error("❌ Error: " + data.error);
       }
     } catch (err) {
-      alert("❌ Failed to stop voice recording.");
+      toast.error("❌ Failed to stop voice recording.");
       console.error(err);
     }
     setLoading(false);
@@ -254,7 +267,7 @@ export default function PatientEntryForm() {
                   >
                     Cancel
                   </button>
-                  
+
                 </div>
               </div>
             </form>
@@ -372,7 +385,7 @@ export default function PatientEntryForm() {
                     </svg>
                     <span>Review all fields before exporting</span>
                   </div>
-                  
+
                   <div className="flex space-x-3">
                     <button
                       type="button"
@@ -390,17 +403,15 @@ export default function PatientEntryForm() {
                     >
                       Reset Notes
                     </button>
-                    
+
                     <button
                       className="px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                       onClick={() => {
                         const payload = {
                           ...formData,
                           ...editableSoap,
-                          doctorName: "Dr Bavuma Lanth", // or make this dynamic
                           clinicName: "Medicare Health",
                           clinicAddress: "Medicare Clinic, NIT Jamshedpur",
-                          contact: "+91 9876543210",
                         };
 
                         // Store in localStorage (safer for long data than URL)
