@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
 import MediCareNavbar from "@/components/ui/Navbar";
 import MediCareFooter from "@/components/ui/Footer";
 

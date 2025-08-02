@@ -1,6 +1,7 @@
 
 import React from "react";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
+import { toast } from 'react-toastify';
 
 // --- CENTRED & SPACED WHITE/BLACK THEME ---
 const styles = StyleSheet.create({
@@ -99,7 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     color: '#111',
     marginBottom: 8,
-    fontStyle: 'italic',
+    // fontStyle: 'italic',
   },
   listItem: {
     flexDirection: 'row',
@@ -132,7 +133,8 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   remarks: {
-    fontStyle: 'italic',
+    // fontStyle: '',
+    fontWeight:'bold',
     backgroundColor: '#f1f1f1',
     padding: 10,
     borderLeft: '3px solid #111',
@@ -191,8 +193,10 @@ const styles = StyleSheet.create({
   },
 });
 
-const MedicalReportPDF = ({ data }) => {
+
+const MedicalReportPDF = ({ data, doctor }) => {
   if (!data) return null;
+  // console.log("doctotr in child", doctor)
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -218,7 +222,7 @@ const MedicalReportPDF = ({ data }) => {
             <Text style={styles.sectionTitle}>Patient Information</Text>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Attending Physician:</Text>
-              <Text style={styles.value}>{data.doctorName}</Text>
+              <Text style={styles.value}>{data.attendingPhysician}</Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Date:</Text>
@@ -251,14 +255,14 @@ const MedicalReportPDF = ({ data }) => {
               <Text style={styles.value}>{data.weight || "—"}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Patient ID:</Text>
+              <Text style={styles.label}>Report ID:</Text>
               <Text style={styles.value}>
                 PT-{Math.random().toString(36).substr(2, 6).toUpperCase()}
               </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Contact:</Text>
-              <Text style={styles.value}>{data.contactNumber|| "—"}</Text>
+              <Text style={styles.value}>{data.contactNumber || "—"}</Text>
             </View>
           </View>
 
@@ -329,7 +333,15 @@ const MedicalReportPDF = ({ data }) => {
               <View style={{ flex: 1, marginRight: 10 }}>
                 <Text style={styles.sectionTitle}>Official Medical Seal</Text>
                 <View style={styles.sealImgBox}>
-                  <Image style={styles.sealImg} src="/medical-seal.jpg" />
+                  <Image
+                    style={styles.sealImg}
+                    src={
+                      doctor?.stampUrl && doctor.stampUrl.trim() !== ""
+                        ? doctor.stampUrl
+                        : "/medical-seal.jpg"
+                    }
+                  />
+
                 </View>
                 <Text style={styles.seal}>
                   Valid only with official seal impression
@@ -341,7 +353,15 @@ const MedicalReportPDF = ({ data }) => {
               <View style={{ flex: 1, marginLeft: 10 }}>
                 <Text style={styles.sectionTitle}>Physician Authorization</Text>
                 <View style={styles.sealImgBox}>
-                  <Image style={styles.signature} src="/signature.jpg" />
+                  <Image
+                    style={styles.signature}
+                    src={
+                      doctor?.signatureUrl && doctor.signatureUrl.trim() !== ""
+                        ? doctor.signatureUrl
+                        : "/signature.jpg"
+                    }
+                  />
+
                 </View>
               </View>
             </View>

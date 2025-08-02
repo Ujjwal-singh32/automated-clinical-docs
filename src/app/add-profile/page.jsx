@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import MediCareNavbar from "@/components/ui/Navbar";
 import MediCareFooter from "@/components/ui/Footer";
+import { toast } from "react-toastify";
 
 export default function DoctorProfileForm() {
   const [formData, setFormData] = useState({
@@ -93,14 +94,13 @@ export default function DoctorProfileForm() {
       if (!res.ok) throw new Error("Failed to save profile");
 
       const result = await res.json();
-      alert("✅ Profile saved successfully!");
+      toast.success("Profile saved successfully!");
       if (result.signatureUrl) setSignaturePreview(result.signatureUrl);
       if (result.stampUrl) setStampPreview(result.stampUrl);
 
       router.push("/profile");
     } catch (err) {
-      console.error("Error:", err);
-      alert("❌ Failed to save profile");
+      toast.error("Failed to save profile");
     }
   };
 
